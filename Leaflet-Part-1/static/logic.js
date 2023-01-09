@@ -6,15 +6,46 @@ d3.json(queryUrl).then(function (data) {
 
 function createFeatures(earthquakeData) { 
     function onEachFeature(feature, layer) {
-        layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p>`);
+        layer.bindPopup(`<h3>${feature.properties.place}</h3><hr>
+        <p>${new Date(feature.properties.time)}</p>
+        <p>Magnitude: ${feature.properties.mag}</p>
+        <p>Depth: ${feature.geometry.coordinates[2]}`);
+    };
+    
+    function circleLayer(feature, latlng) {
+
+        var depth = feature.geometry.coordinates[2];
+        var fillColor = "";
+        if (depth > 90){
+            fillColor = '#78f100';
+        } else if (depth > 70){
+            fillColor = '#fca35d';
+        } else if (depth > 50){
+            fillColor = '#fdb829';
+        } else if (depth > 30){
+            fillColor = '#f7db10';
+        } else if (depth > 10){
+            fillColor = '#ddf400';
+        }else {
+            fillColor = '#a4f600'
+        };
+
+        return new L.CircleMarker(latlng, {
+        	radius: feature.properties.mag * 4, 
+        	fillOpacity: 0.75,
+            color: 'black',
+            fillColor: fillColor,
+            weight: 1
+        });
     };
 
     var earthquakes = L.geoJSON(earthquakeData, {
-        onEachFeature: onEachFeature
+        onEachFeature: onEachFeature,
+        pointToLayer: circleLayer
     });
     
     createMap(earthquakes);
-}
+};
 
 function createMap(earthquakes) {
     var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -38,7 +69,7 @@ function createMap(earthquakes) {
         center: [
             37.09, -95.71
         ],
-        zoom: 5,
+        zoom: 4,
         layers: [street, earthquakes]
     });
 
