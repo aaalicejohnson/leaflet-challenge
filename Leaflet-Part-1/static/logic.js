@@ -1,10 +1,16 @@
+//API Endpoint
 var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
 
+//GET request
 d3.json(queryUrl).then(function (data) {
+    // Send the data.features object to the createFeatures function.
     createFeatures(data.features);
 }); 
 
+//createFeatures function
 function createFeatures(earthquakeData) { 
+
+    //Function to run for each feature of the array
     function onEachFeature(feature, layer) {
         layer.bindPopup(`<h3>${feature.properties.place}</h3><hr>
         <p>${new Date(feature.properties.time)}</p>
@@ -12,6 +18,7 @@ function createFeatures(earthquakeData) {
         <p>Depth: ${feature.geometry.coordinates[2]}`);
     };
     
+    //Circle layer function for the pointToLayer attribute of the geoJSON, goes through each feature of the array.
     function circleLayer(feature, latlng) {
 
         var depth = feature.geometry.coordinates[2];
@@ -39,15 +46,20 @@ function createFeatures(earthquakeData) {
         });
     };
 
+    // Create a GeoJSON layer that contains the features array on the earthquakeData object.
+    // Run the onEachFeature and pointToLayer function once for each piece of data in the array.
     var earthquakes = L.geoJSON(earthquakeData, {
         onEachFeature: onEachFeature,
         pointToLayer: circleLayer
     });
     
+    // Send our earthquakes layer to the createMap function.
     createMap(earthquakes);
 };
 
 function createMap(earthquakes) {
+
+    //Base layers.
     var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     });
@@ -56,16 +68,19 @@ function createMap(earthquakes) {
         attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
     });
     
+    //baseMaps object.
     var baseMaps = {
         "Street Map": street,
         "Topographic Map": topo
     };
 
+    //Overlay object.
     var overlayMaps = {
         Earthquakes: earthquakes
     };
 
-    var myMap = L.map("map", {
+    // Create our map, giving it the streetmap and earthquakes layers to display on load.
+     var myMap = L.map("map", {
         center: [
             37.09, -95.71
         ],
@@ -73,8 +88,11 @@ function createMap(earthquakes) {
         layers: [street, earthquakes]
     });
 
+    // Create a layer control.
+    // Pass it our baseMaps and overlayMaps.
+    // Add the layer control to the map.
     L.control.layers(baseMaps, overlayMaps, {
         collapsed: false
-      }).addTo(myMap);
-
+    }).addTo(myMap);
+    
 };
