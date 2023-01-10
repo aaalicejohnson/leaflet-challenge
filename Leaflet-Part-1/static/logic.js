@@ -7,6 +7,15 @@ d3.json(queryUrl).then(function (data) {
     createFeatures(data.features);
 }); 
 
+function getColor(depth) {
+    return depth >= 90 ? 'red':
+        depth > 70 ? '#fc7f03':
+            depth > 50 ? '#fdb829':
+                depth > 30 ? '##f7db10':
+                     depth > 10 ? '#ddf400':
+                        '#a4f600';    
+};
+
 //createFeatures function
 function createFeatures(earthquakeData) { 
 
@@ -21,27 +30,12 @@ function createFeatures(earthquakeData) {
     //Circle layer function for the pointToLayer attribute of the geoJSON, goes through each feature of the array.
     function circleLayer(feature, latlng) {
 
-        var depth = feature.geometry.coordinates[2];
-        var fillColor = "";
-        if (depth > 90){
-            fillColor = '#78f100';
-        } else if (depth > 70){
-            fillColor = '#fca35d';
-        } else if (depth > 50){
-            fillColor = '#fdb829';
-        } else if (depth > 30){
-            fillColor = '#f7db10';
-        } else if (depth > 10){
-            fillColor = '#ddf400';
-        }else {
-            fillColor = '#a4f600'
-        };
 
         return new L.CircleMarker(latlng, {
         	radius: feature.properties.mag * 4, 
         	fillOpacity: 0.75,
             color: 'black',
-            fillColor: fillColor,
+            fillColor: getColor(feature.geometry.coordinates[2]),
             weight: 1
         });
     };
@@ -94,5 +88,20 @@ function createMap(earthquakes) {
     L.control.layers(baseMaps, overlayMaps, {
         collapsed: false
     }).addTo(myMap);
-    
+
+    var info = L.control({ position: "bottomright" });
+    info.onAdd = function (map) {
+        var div = L.DomUtil.create("div", "legend"),
+            depth = [-10, 10, 30, 50, 70, 90];
+        for (var i = 0; i < depth.length; i++){
+            div.innerHTML +=
+                '<i style="background:' + getColor(depth[i]) + '"></i> ' +
+                depth[i] + (depth[i + 1] ? '&ndash;' + depth[i + 1] + '<br>' : '+');
+        }
+        return div;
+    };
+    // Add the info legend to the map.
+    info.addTo(myMap);
+
+   
 };
