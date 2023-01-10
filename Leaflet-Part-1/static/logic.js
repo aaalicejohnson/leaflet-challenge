@@ -11,7 +11,7 @@ function getColor(depth) {
     return depth >= 90 ? 'red':
         depth > 70 ? '#fc7f03':
             depth > 50 ? '#fdb829':
-                depth > 30 ? '##f7db10':
+                depth > 30 ? '#f7db10':
                      depth > 10 ? '#ddf400':
                         '#a4f600';    
 };
@@ -89,19 +89,20 @@ function createMap(earthquakes) {
         collapsed: false
     }).addTo(myMap);
 
-    var info = L.control({ position: "bottomright" });
-    info.onAdd = function (map) {
-        var div = L.DomUtil.create("div", "legend"),
+    var legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend'),
             depth = [-10, 10, 30, 50, 70, 90];
-        for (var i = 0; i < depth.length; i++){
+        // loop through our magnitude intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < depth.length; i++) {
             div.innerHTML +=
-                '<i style="background:' + getColor(depth[i]) + '"></i> ' +
+                '<i style="background:' + getColor(depth[i] + 1) + '"></i> ' +
                 depth[i] + (depth[i + 1] ? '&ndash;' + depth[i + 1] + '<br>' : '+');
         }
         return div;
     };
     // Add the info legend to the map.
-    info.addTo(myMap);
+    legend.addTo(myMap);
 
    
 };
